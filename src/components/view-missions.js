@@ -365,6 +365,115 @@ class ViewMissions extends HTMLElement {
       return '📜';
     };
 
+    // --- Custom Mission Card ---
+    const customCard = document.createElement('div');
+    customCard.className = 'card mission-card custom-mission-card';
+    customCard.style.cursor = 'default';
+    customCard.style.gridColumn = '1 / -1'; // span full width if needed, or just let it flow
+
+    // We'll use a badge color similar to the others
+    const customBadgeColor = '#9c27b0'; // purple for custom
+
+    customCard.innerHTML = `
+      <div style="margin-bottom: var(--spacing-md); display: flex; justify-content: space-between; align-items: start;">
+          <div style="font-size: 2.5rem; line-height: 1;">✨</div>
+          <span style="
+              background: ${customBadgeColor}22;
+              color: ${customBadgeColor};
+              padding: 4px 8px;
+              border-radius: var(--radius-sm);
+              font-size: 0.75rem;
+              font-weight: 800;
+              text-transform: uppercase;
+              letter-spacing: 0.5px;
+              border: 1px solid ${customBadgeColor}44;
+          ">Custom</span>
+      </div>
+      <h3 style="margin: 0 0 var(--spacing-sm) 0; font-size: 1.4rem; line-height: 1.2;">Create Custom Mission</h3>
+      <p style="margin: 0 0 var(--spacing-md) 0; font-size: 0.95rem; opacity: 0.7; line-height: 1.5;">Define your own scenario, role, and difficulty to practice exactly what you want.</p>
+
+      <div style="display: flex; flex-direction: column; gap: 12px; margin-top: auto; padding-top: var(--spacing-md); border-top: 1px solid rgba(255,255,255,0.05);">
+          <input type="text" id="custom-title" placeholder="Mission Title (e.g. At the Pharmacy)" style="
+              width: 100%; padding: 10px 12px; border: var(--glass-border); border-radius: var(--radius-sm);
+              background: rgba(0,0,0,0.2); color: var(--color-text-main); font-family: var(--font-body); font-size: 0.95rem;
+          " />
+          <textarea id="custom-desc" placeholder="Description (e.g. You need to buy medicine for a headache)" rows="2" style="
+              width: 100%; padding: 10px 12px; border: var(--glass-border); border-radius: var(--radius-sm);
+              background: rgba(0,0,0,0.2); color: var(--color-text-main); font-family: var(--font-body); font-size: 0.95rem; resize: vertical;
+          "></textarea>
+          <div style="display: flex; gap: 12px;">
+              <input type="text" id="custom-role" placeholder="Target Role (e.g. Pharmacist)" style="
+                  flex: 2; padding: 10px 12px; border: var(--glass-border); border-radius: var(--radius-sm);
+                  background: rgba(0,0,0,0.2); color: var(--color-text-main); font-family: var(--font-body); font-size: 0.95rem;
+              " />
+              <select id="custom-difficulty" style="
+                  flex: 1; padding: 10px 12px; border: var(--glass-border); border-radius: var(--radius-sm);
+                  background: rgba(0,0,0,0.2); color: var(--color-text-main); font-family: var(--font-body); font-size: 0.95rem;
+              ">
+                  <option value="Easy">Easy</option>
+                  <option value="Medium">Medium</option>
+                  <option value="Hard">Hard</option>
+                  <option value="Expert">Expert</option>
+              </select>
+          </div>
+          <button id="start-custom-btn" style="
+              margin-top: 8px; padding: 12px; border: none; border-radius: var(--radius-sm);
+              background: var(--color-accent-primary); color: #000; font-family: var(--font-heading); font-size: 1rem;
+              font-weight: 700; cursor: pointer; transition: opacity 0.2s;
+          " onmouseover="this.style.opacity='0.9'" onmouseout="this.style.opacity='1'">Start Custom Mission</button>
+      </div>
+    `;
+
+    customCard.querySelector('#start-custom-btn').addEventListener('click', () => {
+        const title = customCard.querySelector('#custom-title').value.trim();
+        const desc = customCard.querySelector('#custom-desc').value.trim();
+        const role = customCard.querySelector('#custom-role').value.trim();
+        const difficulty = customCard.querySelector('#custom-difficulty').value;
+
+        if (!title || !desc || !role) {
+            alert("Please fill out the Title, Description, and Target Role for your custom mission.");
+            return;
+        }
+
+        const customMission = {
+            id: 'custom_' + Date.now(),
+            title: title,
+            desc: desc,
+            target_role: role,
+            difficulty: difficulty
+        };
+
+        const toSelect = this.querySelector('#to-lang');
+        const fromSelect = this.querySelector('#from-lang');
+
+        const selectedToLang = toSelect.value;
+        const selectedFromLang = fromSelect.value;
+        const selectedMode = localStorage.getItem('immergo_mode') || 'immergo_immersive';
+
+        localStorage.setItem('immergo_language', selectedToLang);
+        localStorage.setItem('immergo_from_language', selectedFromLang);
+
+        this.dispatchEvent(new CustomEvent('navigate', {
+            bubbles: true,
+            detail: {
+                view: 'chat',
+                mission: customMission,
+                language: selectedToLang,
+                fromLanguage: selectedFromLang,
+                mode: selectedMode
+            }
+        }));
+    });
+
+    // Disable hover effects for the custom card since it contains inputs
+    customCard.addEventListener('mouseenter', () => {
+        customCard.style.transform = 'none';
+        customCard.style.boxShadow = 'var(--shadow-sm)';
+        customCard.style.borderColor = 'var(--glass-border)';
+    });
+
+    listContainer.appendChild(customCard);
+
     missions.forEach(mission => {
       const card = document.createElement('div');
       card.className = 'card mission-card';
